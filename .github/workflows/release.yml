@@ -1,0 +1,77 @@
+name: Release to Vercel
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: GitHub environment to deploy
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate release candidate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - name: Validate production build when application files exist
+        if: ${{ hashFiles('app/**', 'pages/**', 'src/app/**', 'src/pages/**') != '' }}
+        run: npm run build
+
+  deploy:
+    name: Deploy to Vercel
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Check deployment prerequisites
+        run: |
+          test -n "$VERCEL_ORG_ID" || (echo 'Missing VERCEL_ORG_ID GitHub variable.' && exit 1)
+          test -n "$VERCEL_PROJECT_ID" || (echo 'Missing VERCEL_PROJECT_ID GitHub variable.' && exit 1)
+          test -n "$VERCEL_TOKEN" || (echo 'Missing VERCEL_TOKEN GitHub secret.' && exit 1)
+          test -n "$DATABASE_URL" || (echo 'Missing DATABASE_URL GitHub secret.' && exit 1)
+      - name: Apply reviewed database migrations
+        run: npm run db:migrate:deploy
+      - name: Pull Vercel production settings
+        run: npx vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: Build Vercel deployment artifact
+        run: npx vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Deploy prebuilt artifact
+        run: npx vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+  smoke:
+    name: Post-deployment smoke test
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Explain required smoke-test target
+        run: |
+          echo 'Add a non-secret PRODUCTION_SMOKE_URL GitHub variable when the application has a public route.'
+          echo 'Run authenticated smoke coverage only after a dedicated non-privileged test account exists.'

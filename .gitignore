@@ -1,0 +1,26 @@
+# Dependencies and builds
+node_modules/
+.next/
+out/
+generated/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Tool reports and test artifacts
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# TypeScript and logs
+*.tsbuildinfo
+*.log
+npm-debug.log*
+
+# Local tooling
+.DS_Store
