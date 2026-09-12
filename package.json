@@ -1,0 +1,53 @@
+{
+  "name": "techstartup-template",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.12 <23",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "test:smoke": "node --env-file-if-exists=.env scripts/smoke-db.mjs",
+    "test:integration": "npm run test:smoke",
+    "test:e2e": "playwright test",
+    "build": "next build",
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "docker:up": "docker compose up -d db",
+    "docker:down": "docker compose down",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run coverage"
+  },
+  "dependencies": {
+    "@prisma/client": "7.10.0",
+    "next": "16.3.5",
+    "pg": "8.16.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@types/node": "22.19.15",
+    "@types/pg": "8.15.6",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@vitest/coverage-v8": "5.0.0",
+    "dotenv": "17.4.2",
+    "eslint": "9.39.3",
+    "eslint-config-next": "16.3.5",
+    "jsdom": "27.4.0",
+    "prettier": "3.8.3",
+    "prisma": "7.10.0",
+    "typescript": "5.9.3",
+    "vercel": "59.16.0",
+    "vitest": "5.0.0"
+  }
+}

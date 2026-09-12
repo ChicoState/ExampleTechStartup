@@ -1,0 +1,12 @@
+# Project-owned infrastructure checks should not rewrite bundled agent instructions or templates.
+.agents/
+.github/ISSUE_TEMPLATE/
+infrastructure_plan.md
+
+# Generated and local artifacts
+node_modules/
+.next/
+coverage/
+playwright-report/
+test-results/
+package-lock.json
